@@ -137,8 +137,69 @@ Now that we have made our DVWA machines, we will make our ELK machine. This one 
   - For "Choose an existing key pair", select the key that you made or used during your Amazon Linux VM creation.
   - Now that your VM has been created, navigate back to the left side bar and click "Instances". Rename your new VM to "ELK Stack" to keep track of it.
 
+## Step 3: Create the Load Balancer
+
+  -  Navigate back to the EC2 page. On the left side bar, scroll down and select Load Balancers.
+  -  Click on "Create Load Balancer".
+  -  Select "Application Load Balancer" and click "Create".
+  -  Step 1:
+      -  Under "Name", put a meaningful name, or you can name it "Load Balancer 1"
+      -  Under "Scheme", select "internal"
+      -  For Availability Zone under VPC, under the dropdown, select VPC1.
+          -  Under availability zones, select both and choose "Private1" and "Private2".
+      - Select next
+  - Step 2: Select next
+  - Step 3: Configure Security Groups
+      -  Select "Create a new security group".
+      -  Under "Type" for the first rule, change it to HTTP and click next.
+  -  Step 4: Configure Routing
+      -  Under "Target Group", select "New target group"
+      -  Name the target group. If you can't think of anything, put "DVWA target group" or "TG1" and click next.
+      -  Under the "Name", select DVWA1 and DVWA2 and click "Add to registered" and click next.
+  -  Click next until create.
+
+Now that we have set up our load balancer, we are ready to connect and configure our instances. 
+
+## Step 4: Connecting to our Virtual Machines for Deployment
+
+  -  First we need to open a Bash/command prompt and nagivate to where the private key we downloaded on our first VM creation.
+      -  If you haven't moved key, it should be located inside your downloads folder (use command - cd Downloads)
+      -  If you haven't yet, download the files in the relevant ansible folders for what you want to deploy
+  -  Navigate back to our EC2 instances page. Select our Jumpbox, and click the orange "Connect", click SSH client. Copy the SSH command by either highlighting and copying or by clicking the small double box icon at the beginning of the command
+      -  The command should look like "ssh -i <key name.pem> <user>@<destination>"
+  -  Before connecting, we want to transfer the private key and the ansible files onto our jumpbox
+      -  Use the command scp -i <key name.pem> <file(s) to be transfered seperated by a space> <user>@<destination>:<path/to/home/directory>
+      -  example: scp -i "AWS-CloudKey.pem" AWS-CloudKey.pem ansible_config.yml ec2-user@ec2-3-139-108-207.us-east-2.compute.amazonaws.com:/home/ec2-user
+          -  In this example, we transfered AWS-Cloudkey.pem and ansible_config.yml in one command
+          -  For the Amazon Linux, the home directory will always be /home/ec2-user
+          -  The <user>@<destination> will look "ec2-user@ec2-3-139-108-207.us-east-2.compute.amazonaws.com" and be the exact same in the ssh command you just copied. 
+  -  Now that we have transfered the files, log into your jumpbox machine using the ssh command that you copied.
+
+Now that we are logged into our machines, we will run the following commands.
+  -  sudo yum update
+  -  sudo yum upgrade
+
+Now that we have upgraded our jumpbox, go back to the Amazon instances page and connect to each one of your ubuntu machines using the orange "connect" button and copy/pasting the ssh commands into the terminal. Note: You must be logged into your jumpbox machine to access the ubuntu machines as they are located on your private subnet. Once you have logged onto your first ubuntu machine, run the following commnands.
+  -  sudo apt-get update
+  -  sudo apt-get upgrade
+  -  exit
+
+Once you hit enter on the exit command, this will put you back into Jumpbox VM. Now log into the other two ubuntu VMs and run the same two commands above. Upon updating and upgrading your third ubuntu machine and exiting back to your jumpbox, we will now start to install docker.
+  -  sudo yum install docker -y
+
+Now that docker has been installed, we need to make a daemon.json file to make sure our docker containers will end up on our subnet IP addresses. 
+  -  sudo nano /etc/docker/daemon.json
+      -  Once you have created the daemon.json file, copy the content in the daemon.json file in the Ansible folder in the Git Repository and paste it into the .json file you have just opened. 
+      -  Save and exit
+
+Now that we have created our daemon.json file, we can start or restart docker.
+  -  sudo service docker start
+  -  sudo service docker restart
+You can check to see if the service is running using
+  -  sudo service docker status
 
 
+  
 
 
 
