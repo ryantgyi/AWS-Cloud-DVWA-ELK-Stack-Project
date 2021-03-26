@@ -160,7 +160,37 @@ Now that we have made our DVWA machines, we will make our ELK machine. This one 
 
 Now that we have set up our load balancer, we are ready to connect and configure our instances. 
 
-## Step 4: Connecting to our Virtual Machines for Deployment
+## Step 4: Configuring your Ansible playbook files
+
+Now that we have our network up and running, we will need to configure out filebeat.yml and metricbeat.yml files to point to the correct IP address of our VMs. Navigate back to your Amazon EC2 instance page to have access to your VM IP addresses. You will need the private IP addresses of your DVWA1, DVWA2, and ELK Stack VMs.
+
+  -  Open the filebeat.yml file using notepad or another code editor. Ctrl+F and search for output.elasticsearch and search for the code listed below
+
+![Alt text](https://github.com/ryantgyi/AWS-Cloud-DVWA-ELK-Stack-Project/blob/main/Images/filebeat%20elasticsearch%20ip%20edit.PNG?raw=true)
+
+  -  Changed the highlighted IP to your DVWA1 server IP, make sure to keep the port.
+  -  Ctrl+F and search for setup.kibana and search for the following code
+
+![Alt text](https://github.com/ryantgyi/AWS-Cloud-DVWA-ELK-Stack-Project/blob/main/Images/filebeat%20kibana%20ip%20edit.PNG?raw=true)
+
+  -  Change the highlighted IP to your DVWA1 server IP, make sure to keep the port
+  -  Save and exit
+
+Now that we have configured the filebeat.yml file, we will configure the metricbeat.yml file.
+
+  -  open the metricbeat.yml file using notepad or another code editor. Scroll down and look for the following code
+
+![Alt text](https://github.com/ryantgyi/AWS-Cloud-DVWA-ELK-Stack-Project/blob/main/Images/metricbeat%20kibana%20ip%20edit.PNG?raw=true)
+
+  -  Change the highlighted IP to your ELK server IP. Make sure to keep the port
+  -  Scroll down and search for the following code
+
+![Alt text](https://github.com/ryantgyi/AWS-Cloud-DVWA-ELK-Stack-Project/blob/main/Images/metricbeat%20elasticsearch%20ip%20edit.PNG?raw=true)
+
+  -  Change the highlighted IP to your ELK server IP. Make sure the keep the port
+  -  Save and exit
+
+## Step 5: Connecting to our Virtual Machines for Deployment
 
   -  First we need to open a Bash/command prompt and nagivate to where the private key we downloaded on our first VM creation.
       -  If you haven't moved key, it should be located inside your downloads folder (use command - cd Downloads)
@@ -195,34 +225,120 @@ Now that docker has been installed, we need to make a daemon.json file to make s
 Now that we have created our daemon.json file, we can start or restart docker.
   -  sudo service docker start
   -  sudo service docker restart
+
 You can check to see if the service is running using
   -  sudo service docker status
 
+How that docker is up and running, we are going to pull a docker image and use that image to deploy a container.
+  -  sudo docker pull cyberxsecurity/ansible
+  -  sudo docker run -ti cyberxsecurity/ansible bash
 
-  
+This will move us from our jumpbox into the ansible container itself. It is important you do not exit out of this container or everything that you move into this container will be deleted and you have to restart using the run command above. Since we cannot exit out of this container without deleting it, we will need to open up a second bash/command prompt terminal in order to move files from out jumpbox VM into our ansible container. After navigating back to your downloads folder (or where your private keyu is), log in to your jumpbox VM using the ssh command. We will now copy the files you moved into your jumpbox using the scp command into your docker container.
+  -  sudo docker ps
 
+This will show you an output of all docker containers running. Since we only have one container running, look for the container id in the "sudo docker ps" output. If for some reason you have more than one container from exiting earlier and aren't sure which one is which, look at your original bash terminal that is logged into your container and copy the container id after root@<container id>. Now that you have the container id, we will copy each file using one command. Unlike the scp command, you cannot copy more than one file at time so you must run this command more than once.
+  -  sudo docker cp <file name> <container id>:/root
+  -  example: sudo docker cp AWS-CloudKey.pem fb9cjkdj28:/root
 
+You must copy all the files from their respective ansible folders in order to run each service.
 
+Now that our files have been transfered, we can start editing the container files to deploy our services to their respective VMs. Moving back to our ansible container bash terminal (the first terminal), run the following command.
 
+  -  nano /etc/ansible/hosts
 
+Now that we are inside the file, we need to set the proper headers and IPs.
 
+  -  Scroll down and search for "## [webservers]. Remove the comments (##) and the space before the [webservers]. This makes [webservers] our header.
+  -  On two new lines right under [webservers], put the IP addresses of your DVWA1 and DVWA2 VMs
+  -  On a new line right under your DVWA2 IP address, put a new header just like [webservers] called "[elkservers]" (without quotes). This makes [elkservers] another new header.
+  -  One a new line right under [elkservers], put the IP address of your ELK server VM
 
+Now that we have configured out /etc/ansible/hosts file, we need to configure the other file. Use the following command to access the ansible.cfg file
 
+  -  nano /etc/ansible/ansible.cfg
+      -  Hit Ctrl+W and type "remote_user"
+      -  remove the comment (#) before remote_user and change root to "ubuntu"
+      -  the line should read
+          -  remote_user=ubuntu
+  -  Now that our ansible files have been configured, we need to ssh back into our VMs again. Using the Amazon connect/ssh command, log into your DVWA1, DVWA2, and ELK servers from your ansible container. When you log in, just exit back out back into the ansible container again before using ssh to log into another VM. While this step might be optional, it prevented me from running into an error.
+Now that we have logged into our VM machines and back into our ansible container, we can deploy our ansible playbooks. Run the following command
+  -  ansible-playbook ansible_config.yml --key-file <key name.pem>
+  -  example: ansible-playbook ansible_config.yml --key-file AWS-CloudKey.pem
 
+This will start deploying our DVWA services onto our DVWA machines. After that is finished deploying, we can deploy our ELK playbook.
+  -  ansible-playbook install-elk.yml --key-file <key name.pem>
+  -  example: ansible-playbook install-elk.yml --key-file AWS-CloudKey.pem
 
+Once ELK has been deployed to our ELK Server VM, we can deploy filebeat. Run the following command.
 
+  -  ansible-playbook filebeat-playbook.yml --key-file <key name.pem>
+  -  example: ansible-playbook filebeat-playbook.yml --key-file AWS-CloudKey.pem
 
+Once filebeat has been deployed, we can deploy metricbeat. Run the following command.
+  -  ansible-playbook metricbeat-playbook.yml --key-file <key name.pem>
+  -  example: ansible-playbook metricbeat-playbook.yml --key-file AWS-CloudKey.pem
 
+NOTE: If filebeat or metricbeat do not deploy, do not exit out or you will have to reconfigure your ansible container again starting at the "sudo docker run -ti cyberxsecurity/ansible" command. Remove the playbook files using the following commands for whichever service did not deploy successfully. You will have to edit the playbook file(s) on your local computer and copy them to your Jumpbox VM and from there to your ansible container again.
+  -  rm filebeat-playbook.yml
+  -  rm metricbeat-playbook.yml
 
+NOTE: Do not close your ansible container bash until you have successful deployed both filebeat and metricbeat
 
+## Step 6: Logging into your DVWA and ELK servers on Windows
 
+Now that your DVWA and ELK servers have been deployed, you can log into them on your Windows VM. Go back to your Amazon EC2 instance page and click connect to your Windows VM.   
+  -  Click on "RDP client" and click "Download remote desktop file".
+  -   Look lower and click on "Get password". 
+  -   Click on "Browse" and select your private key .pem file that you used to create your Windows VM. 
+  -   Once you select your file, click "Decrypt Password" and copy the decrypted password by highlighting and copying or clicking on the two square icon to the left of the password. 
+  -   Open your downloads folder and open the file titled "Windows" with the type "Remote Desktop Connection". 
+  -   Paste your copied password into the prompt and connect to your windows machine. 
 
+Now that we are in Windows, we need to disable some security settings to download Chrome and effectively see our servies (they do not run on IE)
+  -   Once your desktop loads, open "Server Manager"
+  -   Click on "Local server". 
+  -   Find the setting titled "IE Enhanced Security Configuration"
+  -   Turn both setting from on to "off" 
+  -   Open your browser and download chrome
 
+Now that we have Chrome, we can connect to our DVWA machines. Minimize your RDP and go back to your Amazon EC2 page. Go to the left side bar and go to your load balancer that you created. Click on the load balancer and located the "DNS name" under description. Copy the DNS name (Should start with "internal"). Paste the DNS name you copied into Chrome on your Windows VM. If the DVWA webpage loads, everything is good! If not, try the private IP of your DVWA1 machine or DVWA2 machine.
 
+Now that you have connected to your DVWA servers, we will connect to our elk server. On a new tab in Chrome on your Windows machine, type the private IP of your elk VM in the search bar followed by :5601.
 
+  -  <ELK Stack private IP>:5601
+  -  example: 10.10.2.X:5601
 
+If the Kibana webpage loads, everything is good!
 
-------------------------------------------------------------------------------------------------------------------------
-Now that your network has been setup, we will start installing docker/ansible to start deploying our server applications.
-  -  Let's ssh into your Jumpbox machine
-  -  Run "sudo yum update" and "sudo yum upgrade" to make sure our machine is up to date
+## Troubleshooting Filebeat and Metricbeat deployment
+
+If filebeat or metricbeat do not deploy we need to reconfigure the filebeat-playbook.yml file and/or the metricbeat-filebeat.yml file.
+
+  -  On our Windows VM, open chrome and reconnect to Kibana/Elk server using 10.10.2.X:5601
+  -  Click "Add log data"
+  -  Click "Logstash data"
+  -  Right under "Getting started", click on "DEB" to open the linux commands needed
+  -  On your local machine, open the filebeat-playbook.yml file and follow the instructions under "Getting Started"
+
+When your done, go back to the kibana home page.
+  -  Click on "Add metrics"
+  -  Click on "Kibana metrics"
+  -  Right under "Getting started", click on "DEB" to open the linux commands needed
+  -  On your local machine, open the metricbeat-playbeat.yml file and follow the instructions under "Getting Started"
+
+Now that the playbook files have been configured, open up a second bash script. Log into your Jumpbox VM using the Amazon connect ssh command.
+  -  rm filebeat-playbook.yml
+  -  rm metricbeat-playbook.yml
+  -  exit
+
+Copy the new filebeat-playbook.yml file and the metricbeat-playbook.yml file into your Jumpbox VM using the scp command from earlier and log into your Jumpbox VM using the Amazon connect ssh command. Now that the updated files are on your Jumpbox, you can copy them using the following commands
+
+  -  sudo docker cp filebeat-playbook.yml <docker container id>:/root
+  -  sudo docker cp metricbeat-playbook.yml <docker container id>:/root
+
+Now moving back to your ansible container bash terminal, run the following commands again.
+
+  -  ansible-playbook filebeat-playbook.yml --key-file <key file.pem>
+  -  ansible-playbook metricbeat-playbook.yml --key-file <key file.pem>
+
+This should deploy the services properly.
