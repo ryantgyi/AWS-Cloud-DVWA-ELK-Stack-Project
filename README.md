@@ -3,7 +3,7 @@
 ![Alt text](https://github.com/ryantgyi/AWS-Cloud-DVWA-ELK-Stack-Project/blob/main/Diagrams/AWS%20Cloud%20Network%20Diagram.png?raw=true)
 
 
-This will be a comprhensive guide to create your AWS network, install docker and ansible, and deploy DVWA, ELK stack, filebeat, and metric beat to your various VM's inside your network. We will be using AWS CloudFormation to deploy our network infrastructure quickly. Once our network has been deployed, we can choose to edit it further if more is required from our network. 
+This will be a comprehensive guide to create your AWS network, install docker and ansible, and deploy DVWA, ELK stack, filebeat, and metric beat to your various VM's inside your network. We will be using AWS CloudFormation to deploy our network infrastructure quickly. Once our network has been deployed, we can choose to edit it further if more is required from our network. 
 
 ## Understand the Topology
 
@@ -17,9 +17,9 @@ As show in the diagram above, our network is configured into 4 different subnets
 |      Windows     	| Windows Machine 	| 10.10.0.0/24 	|     Public     	|   Windows-SG   	|   Viewing DVWA/Kibana 	  |
 |    Amazon Linux   | Ansible/Jumpbox 	| 10.10.0.0/24 	|     Public     	|   Jumpbox-SG   	|   Gateway/Deployment   	|
 
-## Purose of the network
+## Purpose of the network
 
-The purpose of our network is to deploy two DVWA machines with filebeat and an ELK server with metricbeat. Using the files listed in the Ansible folder, we will be using ansible and docker to quickly deploy these servies to our VMs in our private subnet from our public jumpbox. The purpose of this deployment method is to be able to quickly deploy these servies to many machines at once, eliminating the need to set each machine up individually, ultimately saving time and money. 
+The purpose of our network is to deploy two DVWA machines with filebeat and an ELK server with metricbeat. Using the files listed in the Ansible folder, we will be using ansible and docker to quickly deploy these services to our VMs in our private subnet from our public jumpbox. The purpose of this deployment method is to be able to quickly deploy these services to many machines at once, eliminating the need to set each machine up individually, ultimately saving time and money. 
 
 ## Access policies
 
@@ -32,7 +32,7 @@ The purpose of our network is to deploy two DVWA machines with filebeat and an E
 Ansible is being used to automate the configuration of our DVWA/ELK servers. Aside from minor network and file edits, no manual installation or configuration is needed. Our playbook files will be downloading, installing, and configuring our DVWA/ELK servers on our target machines. As seen in the diagram above, these machines are located on our private subnet. It is important that our target machines for our DWVA/ELK servers have an ubuntu operating system, otherwise the code inside our playbook files will not run. Our ELK server is set up to monitor the following machines
   -  DWVA1 with filebeat - 10.10.2.x/24
   -  DVWA2 with filebeat - 10.10.2.x/24
-  -  Note: The inital deployment of our DVWA machines do not contain filebeat. This will be installed after our deployment of our DVWA machines.
+  -  Note: The initial deployment of our DVWA machines do not contain filebeat. This will be installed after our deployment of our DVWA machines.
 
 ## Using our Ansible playbooks
 In order to use our playbook files effectively, we need to have docker installed on a machine, in this case our Jumpbox VM. Once you have docker installed on your VM:
@@ -57,10 +57,10 @@ Before continuing on to make our VMs, we need add some functionality to our netw
   -  On the left side bar, search for subnet
   -  Select the subnets "Public1" and "Public2"
   -  Near the top/top right, select the "Actions" and select the option "Modify auto-assign IP settings"
-  -  Select the checkbox to enable auto-assign public public IPv4 address
+  -  Select the checkbox to enable auto-assign public IPv4 address
 
 ## Step 2: Setting up our Amazon VM's
-It is imporant on this step to create 3 ubuntu VMs inside our subnet "Private2". The jumpbox will be our amazon linux, located inside our subnet "Public1". First we will set up our Amazon linux.
+It is important on this step to create 3 ubuntu VMs inside our subnet "Private2". The jumpbox will be our amazon linux, located inside our subnet "Public1". First we will set up our Amazon linux.
 
   -  Using the search bar at the top, navigate to EC2. Using the left side bar, click on "Instances".
   -  In the top right, click on "Launch instances".
@@ -192,15 +192,15 @@ Now that we have configured the filebeat.yml file, we will configure the metricb
 
 ## Step 5: Connecting to our Virtual Machines for Deployment
 
-  -  First we need to open a Bash/command prompt and nagivate to where the private key we downloaded on our first VM creation.
+  -  First we need to open a Bash/command prompt and navigate to where the private key we downloaded on our first VM creation.
       -  If you haven't moved key, it should be located inside your downloads folder (use command - cd Downloads)
       -  If you haven't yet, download the files in the relevant ansible folders for what you want to deploy
   -  Navigate back to our EC2 instances page. Select our Jumpbox, and click the orange "Connect", click SSH client. Copy the SSH command by either highlighting and copying or by clicking the small double box icon at the beginning of the command
       -  The command should look like "ssh -i <key name.pem> <user>@<destination>"
   -  Before connecting, we want to transfer the private key and the ansible files onto our jumpbox
-      -  Use the command scp -i <key name.pem> <file(s) to be transfered seperated by a space> <user>@<destination>:<path/to/home/directory>
+      -  Use the command scp -i <key name.pem> <file(s) to be transferred separated by a space> <user>@<destination>:<path/to/home/directory>
       -  example: scp -i "AWS-CloudKey.pem" AWS-CloudKey.pem ansible_config.yml ec2-user@ec2-3-139-108-207.us-east-2.compute.amazonaws.com:/home/ec2-user
-          -  In this example, we transfered AWS-Cloudkey.pem and ansible_config.yml in one command
+          -  In this example, we transferred AWS-Cloudkey.pem and ansible_config.yml in one command
           -  For the Amazon Linux, the home directory will always be /home/ec2-user
           -  The <user>@<destination> will look "ec2-user@ec2-3-139-108-207.us-east-2.compute.amazonaws.com" and be the exact same in the ssh command you just copied. 
   -  Now that we have transfered the files, log into your jumpbox machine using the ssh command that you copied.
@@ -209,7 +209,7 @@ Now that we are logged into our machines, we will run the following commands.
   -  sudo yum update
   -  sudo yum upgrade
 
-Now that we have upgraded our jumpbox, go back to the Amazon instances page and connect to each one of your ubuntu machines using the orange "connect" button and copy/pasting the ssh commands into the terminal. Note: You must be logged into your jumpbox machine to access the ubuntu machines as they are located on your private subnet. Once you have logged onto your first ubuntu machine, run the following commnands.
+Now that we have upgraded our jumpbox, go back to the Amazon instances page and connect to each one of your ubuntu machines using the orange "connect" button and copy/pasting the ssh commands into the terminal. Note: You must be logged into your jumpbox machine to access the ubuntu machines as they are located on your private subnet. Once you have logged onto your first ubuntu machine, run the following commands.
   -  sudo apt-get update
   -  sudo apt-get upgrade
   -  exit
@@ -242,7 +242,7 @@ This will show you an output of all docker containers running. Since we only hav
 
 You must copy all the files from their respective ansible folders in order to run each service.
 
-Now that our files have been transfered, we can start editing the container files to deploy our services to their respective VMs. Moving back to our ansible container bash terminal (the first terminal), run the following command.
+Now that our files have been transferred, we can start editing the container files to deploy our services to their respective VMs. Moving back to our ansible container bash terminal (the first terminal), run the following command.
 
   -  nano /etc/ansible/hosts
 
@@ -294,7 +294,7 @@ Now that your DVWA and ELK servers have been deployed, you can log into them on 
   -   Open your downloads folder and open the file titled "Windows" with the type "Remote Desktop Connection". 
   -   Paste your copied password into the prompt and connect to your windows machine. 
 
-Now that we are in Windows, we need to disable some security settings to download Chrome and effectively see our servies (they do not run on IE)
+Now that we are in Windows, we need to disable some security settings to download Chrome and effectively see our services (they do not run on IE)
   -   Once your desktop loads, open "Server Manager"
   -   Click on "Local server". 
   -   Find the setting titled "IE Enhanced Security Configuration"
