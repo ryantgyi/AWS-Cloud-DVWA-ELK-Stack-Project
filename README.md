@@ -43,8 +43,13 @@ In order to use our playbook files effectively, we need to have docker installed
   -  Edit the /etc/ansible/ansible.cfg with the correct remote_user
   -  Deploy the relevant playbook files (ansible_config.yml -> install-elk.yml -> filebeat-playbook.yml -> metricbeat-playbook.yml)
 
+# Step by step process
 
-
+## Step 1: Using CloudFormation to create out VPC Network
+  -  Go to https://aws.amazon.com/cloudformation/ click "Create Stack"
+  -  Select "Upload a template"
+  -  Upload the file in the repository "Basic_Network_Cloud_Formation.yaml" and select next
+  -  Name the network stack and select next until you can launch your instance
 
 
 
