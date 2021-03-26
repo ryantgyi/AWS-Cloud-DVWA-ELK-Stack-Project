@@ -11,11 +11,11 @@ As show in the diagram above, our network is configured into 4 different subnets
 
 | Operating System 	|       Name      	|    Subnet    	| Access Policy 	| Security Group 	|   Function  	|
 |:----------------:	|:---------------:	|:------------:	|:--------------:	|:--------------:	|:-----------:	|
-|      Ubuntu      	|    ELK Server   	| 10.10.2.x/24 	|     Private    	|  ELKServer-SG  	|    Server   	|
-|      Ubuntu      	|  DVWA 1 Server  	| 10.10.2.x/24 	|     Private    	|  WebServer-SG  	|    Server   	|
-|      Ubuntu      	|  DVWA 2 Server  	| 10.10.2.x/24 	|     Private    	|  WebServer-SG  	|    Server   	|
-|      Windows     	| Windows Machine 	| 10.10.0.x/24 	|     Public     	|   Windows-SG   	|   Gateway 	|
-|   Amazon Linux   	| Ansible/Jumpbox 	| 10.10.0.x/24 	|     Public     	|   Jumpbox-SG   	|   Gateway   	|
+|      Ubuntu      	|  DVWA 1 Server  	| 10.10.2.0/24 	|     Private    	|  ELK Server-SG  	|    Server   	|
+|      Ubuntu      	|  DVWA 2 Server  	| 10.10.2.0/24 	|     Private    	|  Webserver-SG  	|    Server   	|
+|      Ubuntu      	| ELK Stack Server	| 10.10.2.0/24 	|     Private    	|  Webserver-SG  	|    Server   	|
+|      Windows     	| Windows Machine 	| 10.10.0.0/24 	|     Public     	|   Windows-SG   	|   Gateway 	  |
+|   Amazon Linux   	| Ansible/Jumpbox 	| 10.10.0.0/24 	|     Public     	|   Jumpbox-SG   	|   Gateway   	|
 
 
 
